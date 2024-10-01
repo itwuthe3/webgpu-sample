@@ -1,1 +1,1 @@
-# webgpu-sample
+# webgl-sample
