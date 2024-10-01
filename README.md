@@ -18,8 +18,8 @@ Three.js を使用したサンプルアプリケーション
 
 1. リポジトリをクローンします：
    ```
-   git clone https://github.com/yourusername/your-repo-name.git
-   cd your-repo-name
+   git clone https://github.com/itwuthe3/webgpu-sample.git
+   cd webgpu-sample
    ```
 
 2. 依存関係をインストールします：
