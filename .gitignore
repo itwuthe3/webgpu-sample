@@ -30,3 +30,6 @@ yarn-error.log*
 # その他
 *.swp
 *.swo
+
+# VS Code workspace file
+webgpu-sample.code-workspace
