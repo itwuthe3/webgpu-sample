@@ -34,10 +34,17 @@ type Props = {
 
 const hasWebGPU = () => typeof navigator !== 'undefined' && 'gpu' in navigator;
 
+/** これを下回ったらコンソールに警告を出す */
+const TARGET_FPS = 60;
+/** 毎回警告すると埋もれるので、続けて出すまでの間隔（ミリ秒） */
+const WARN_INTERVAL = 5000;
+
 const WebGPUCanvas: React.FC<Props> = ({ title, hint, setup }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const setupRef = useRef(setup);
   setupRef.current = setup;
+  const titleRef = useRef(title);
+  titleRef.current = title;
 
   const [error, setError] = useState<string | null>(null);
   const [fps, setFps] = useState(0);
@@ -99,6 +106,9 @@ const WebGPUCanvas: React.FC<Props> = ({ title, hint, setup }) => {
       let last = start;
       let frames = 0;
       let fpsCheckedAt = start;
+      let warnedAt = 0;
+      // 起動直後はシェーダーのコンパイルで必ず落ちるので、少し待ってから見る
+      const warnFrom = start + 2000;
 
       r.setAnimationLoop(() => {
         const now = performance.now();
@@ -115,9 +125,19 @@ const WebGPUCanvas: React.FC<Props> = ({ title, hint, setup }) => {
 
         frames += 1;
         if (now - fpsCheckedAt >= 500) {
-          setFps(Math.round((frames * 1000) / (now - fpsCheckedAt)));
+          // 丸めた値で判定する。60Hz ディスプレイの vsync 揺れで 59.7 などが出ても誤警告しない
+          const measured = Math.round((frames * 1000) / (now - fpsCheckedAt));
+          setFps(measured);
           frames = 0;
           fpsCheckedAt = now;
+
+          if (measured < TARGET_FPS && now >= warnFrom && now - warnedAt >= WARN_INTERVAL) {
+            warnedAt = now;
+            console.warn(
+              `[${titleRef.current}] ${measured} fps — ${TARGET_FPS}fps を下回っています。` +
+                '粒子数・レイマーチのステップ数・ポリゴン数を見直してください。'
+            );
+          }
         }
       });
     })();
