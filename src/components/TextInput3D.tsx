@@ -119,7 +119,7 @@ const Letter: React.FC<{ char: string, position: [number, number, number], explo
 
   return (
     <>
-      <animated.mesh ref={meshRef} position={position} scale={scale.to(s => [s, s, s])}>
+      <animated.mesh ref={meshRef} position={position} scale={scale}>
         <Text
           fontSize={0.5}
           color="blue"

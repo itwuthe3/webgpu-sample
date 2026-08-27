@@ -36,7 +36,9 @@ const server = http.createServer((req, res) => {
 		'.ttf': 'application/font-ttf',
 		'.eot': 'application/vnd.ms-fontobject',
 		'.otf': 'application/font-otf',
-		'.wasm': 'application/wasm'
+		'.wasm': 'application/wasm',
+		'.gltf': 'model/gltf+json',
+		'.bin': 'application/octet-stream'
 	};
 
 	const contentType = mimeTypes[extname] || 'application/octet-stream';
