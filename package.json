@@ -19,6 +19,7 @@
     "typescript": "^5.9.3"
   },
   "scripts": {
-    "build": "esbuild src/index.tsx --bundle --minify --sourcemap --outfile=dist/bundle.js"
+    "build": "esbuild src/index.tsx --bundle --minify --sourcemap --outfile=dist/bundle.js",
+    "build:site": "npm run build && node scripts/build-site.mjs"
   }
 }

@@ -1,0 +1,3 @@
+# SPA フォールバック。react-router が処理するので、どのパスでも index.html を返す。
+# 実在するファイル（/assets/... や /dist/bundle.js）はこれより先に配信される。
+/*  /index.html  200

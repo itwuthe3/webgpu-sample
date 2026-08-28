@@ -1,0 +1,7 @@
+# モデルとテクスチャは差し替えない限り変わらないので、長めにキャッシュさせる。
+# /dist/bundle.js は毎回変わるので、あえて指定しない（既定の短いキャッシュに任せる）。
+/assets/*
+  Cache-Control: public, max-age=86400
+
+/images/*
+  Cache-Control: public, max-age=86400
