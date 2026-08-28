@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { LanguageToggle, useText } from '../../i18n';
 import { PerspectiveCamera, Scene, WebGPURenderer } from 'three/webgpu';
 
 /**
@@ -48,13 +49,19 @@ const WebGPUCanvas: React.FC<Props> = ({ title, hint, setup }) => {
 
   const [error, setError] = useState<string | null>(null);
   const [fps, setFps] = useState(0);
+  const t = useText();
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     if (!hasWebGPU()) {
-      setError('このブラウザは WebGPU に対応していません。Chrome / Edge / Safari の最新版でお試しください。');
+      setError(
+        t(
+          'このブラウザは WebGPU に対応していません。Chrome / Edge / Safari の最新版でお試しください。',
+          'This browser does not support WebGPU. Please try the latest Chrome, Edge, or Safari.'
+        )
+      );
       return;
     }
 
@@ -70,7 +77,8 @@ const WebGPUCanvas: React.FC<Props> = ({ title, hint, setup }) => {
       try {
         await r.init();
       } catch (e) {
-        setError(`WebGPU の初期化に失敗しました: ${e instanceof Error ? e.message : String(e)}`);
+        const detail = e instanceof Error ? e.message : String(e);
+        setError(t(`WebGPU の初期化に失敗しました: ${detail}`, `Failed to initialise WebGPU: ${detail}`));
         return;
       }
       if (disposed) return;
@@ -91,7 +99,8 @@ const WebGPUCanvas: React.FC<Props> = ({ title, hint, setup }) => {
       try {
         controller = (await setupRef.current({ renderer: r, scene, camera, canvas })) ?? {};
       } catch (e) {
-        setError(`シーンの構築に失敗しました: ${e instanceof Error ? e.message : String(e)}`);
+        const detail = e instanceof Error ? e.message : String(e);
+        setError(t(`シーンの構築に失敗しました: ${detail}`, `Failed to build the scene: ${detail}`));
         return;
       }
       if (disposed) {
@@ -175,22 +184,22 @@ const WebGPUCanvas: React.FC<Props> = ({ title, hint, setup }) => {
         <div style={{ marginTop: 8, opacity: 0.6, fontVariantNumeric: 'tabular-nums' }}>{fps} fps</div>
       </div>
 
-      <Link
-        to="/"
-        style={{
-          position: 'absolute',
-          top: 16,
-          right: 16,
-          padding: '8px 14px',
-          borderRadius: 8,
-          background: 'rgba(0, 0, 0, 0.45)',
-          color: '#f2f4f8',
-          font: '13px system-ui, sans-serif',
-          textDecoration: 'none'
-        }}
-      >
-        ← 一覧へ
-      </Link>
+      <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 8, alignItems: 'center' }}>
+        <LanguageToggle />
+        <Link
+          to="/"
+          style={{
+            padding: '8px 14px',
+            borderRadius: 8,
+            background: 'rgba(0, 0, 0, 0.45)',
+            color: '#f2f4f8',
+            font: '13px system-ui, sans-serif',
+            textDecoration: 'none'
+          }}
+        >
+          {t('← 一覧へ', '← All samples')}
+        </Link>
+      </div>
 
       {error && (
         <div

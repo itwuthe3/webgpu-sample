@@ -53,9 +53,10 @@ import {
   vertexIndex
 } from 'three/tsl';
 import { bloom } from 'three/examples/jsm/tsl/display/BloomNode.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { createGLTFLoader } from './gltf';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import WebGPUCanvas, { SceneSetup } from './WebGPUCanvas';
+import { useText } from '../../i18n';
 
 /**
  * 日の当たる水面のゆらぎ。
@@ -82,7 +83,7 @@ const ASSETS = '/assets/polyhaven';
 
 const setup: SceneSetup = async ({ renderer, scene, camera, canvas }) => {
   // --- 外部アセット（Poly Haven / CC0。assets/polyhaven/CREDITS.md 参照） ---
-  const gltfLoader = new GLTFLoader();
+  const gltfLoader = createGLTFLoader();
   const rockSets = await Promise.all([
     gltfLoader.loadAsync(`${ASSETS}/rock_moss_set_01/rock_moss_set_01_1k.gltf`),
     gltfLoader.loadAsync(`${ASSETS}/rock_moss_set_02/rock_moss_set_02_1k.gltf`)
@@ -440,16 +441,23 @@ const setup: SceneSetup = async ({ renderer, scene, camera, canvas }) => {
 
 const WaterCaustics: React.FC = () => {
   const memoizedSetup = useCallback(setup, []);
+  const t = useText();
   return (
     <WebGPUCanvas
-      title="日の当たる水面"
-      hint={
+      title={t('日の当たる水面', 'Water Caustics')}
+      hint={t(
         <>
           256×256 の格子で波動方程式を解き、その曲率から水底の光の網を焼いています。
           <br />
           マウスを水面に重ねると波紋が立ちます。ドラッグで回転。
+        </>,
+        <>
+          The wave equation is solved on a 256×256 grid, and the caustics on the bed are baked from
+          its curvature.
+          <br />
+          Hover over the water to make ripples. Drag to orbit.
         </>
-      }
+      )}
       setup={memoizedSetup}
     />
   );

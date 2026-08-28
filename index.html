@@ -3,19 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>React Three.js 海のサンプル</title>
+    <!-- React が起動したら i18n が言語に応じて差し替える。ここは最初の一瞬だけ見えるもの -->
+    <title>WebGPU サンプル集 / WebGPU Samples</title>
     <style>
+        /* サンプルのページは 100vh で完結するが、一覧はスクロールするので
+           overflow は塞がない（塞ぐと LP が読めなくなる） */
+        html {
+            background: #05070a;
+            color-scheme: dark;
+        }
         body, #root {
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+        }
+        body {
+            overflow-x: hidden;
         }
     </style>
 </head>
 <body>
     <div id="root"></div>
-    <script src="dist/bundle.js"></script>
+    <!-- 絶対パスにしておく。相対だと /flame へ直接アクセスしたときに /flame/dist/... を探しに行く -->
+    <script src="/dist/bundle.js"></script>
 </body>
 </html>

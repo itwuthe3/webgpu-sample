@@ -61,9 +61,10 @@ import {
   vec4
 } from 'three/tsl';
 import { bloom } from 'three/examples/jsm/tsl/display/BloomNode.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { createGLTFLoader } from './gltf';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import WebGPUCanvas, { SceneSetup } from './WebGPUCanvas';
+import { useText } from '../../i18n';
 
 /**
  * 木漏れ日。
@@ -103,7 +104,7 @@ const setup: SceneSetup = async ({ renderer, scene, camera, canvas }) => {
     if (repeat) map.wrapS = map.wrapT = RepeatWrapping;
     return map;
   };
-  const gltfLoader = new GLTFLoader();
+  const gltfLoader = createGLTFLoader();
 
   const [leafAlphaMap, groundDiffuse, treeGltf, stumpGltf, logGltf, rockGltf] = await Promise.all([
     // glTF のテクスチャは jpg なのでアルファを持てない。葉の抜きは別ファイルから与える
@@ -559,17 +560,25 @@ const setup: SceneSetup = async ({ renderer, scene, camera, canvas }) => {
 
 const Komorebi: React.FC = () => {
   const memoizedSetup = useCallback(setup, []);
+  const t = useText();
   return (
     <WebGPUCanvas
-      title="木漏れ日"
-      hint={
+      title={t('木漏れ日', 'Komorebi')}
+      hint={t(
         <>
           フォトグラメトリの木を並べ、太陽から見た葉の影を毎フレーム焼いて、地面の光斑・光の柱・
           塵のきらめきをそこから読んでいます。
           <br />
           上にドラッグすると見上げられます。
+        </>,
+        <>
+          Photogrammetry trees, with the shadow of their leaves baked from the sun's point of view
+          every frame. The dapples on the ground, the shafts of light and the glinting dust are all
+          read from that one map.
+          <br />
+          Drag upward to look up into the canopy.
         </>
-      }
+      )}
       setup={memoizedSetup}
     />
   );
