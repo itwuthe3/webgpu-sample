@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
 ## 概要
 
@@ -222,20 +222,6 @@ TSL を書くうえでの実際にハマった点：
 スプライトを小さくするほうが効く。木漏れ日は木のポリゴン数律速で、影マップに描く本数
 （`NEAR_TREES`）がそのまま効く。光の柱のレイマーチはレイ1本につき26回サンプルするが、
 影マップのテクスチャ読みなので安い（ノイズを直接評価していた頃は同じ設定で 1/10 以下の fps だった）。
-
-## 表示言語
-
-日本語と英語を切り替えられる。仕組みは [src/i18n.tsx](src/i18n.tsx) だけ。
-
-- 文言はキーの表を持たず、`const t = useText()` の `t('日本語', 'English')` で**原文を並べて書く**。
-  JSX も渡せるので、`<br />` の入った説明文もそのまま扱える。小さなサイトではこのほうが崩れにくい
-- 判定は**ブラウザの言語設定とタイムゾーン**の両方を見て、どちらかが日本を指していれば日本語。
-  言語設定だけだと日本在住で英語ブラウザの人に英語が出て、タイムゾーンだけだと
-  旅行中の日本人に英語が出る。IP で判定したいなら Cloudflare Pages Functions の
-  `request.cf.country` が使えるが、そのためだけにサーバー側の仕組みを持つのは避けた
-- 手動の切り替えは localStorage に覚えて最優先する。**判定を外したときの逃げ道として、
-  切り替えボタンは必ずどこかに出しておくこと**（一覧の右上と、サンプル画面の右上）
-- 新しい文言を足すときは、日本語だけで書かないこと。`t()` を通す
 
 ## 公開リポジトリとしての注意
 

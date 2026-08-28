@@ -1,0 +1,77 @@
+#!/bin/sh
+# public リポジトリへ push する前の最終確認。
+#
+# git の履歴は消せない。一度 push したものは、あとからファイルを消しても履歴から
+# 取り出せてしまう。public リポジトリではそれがそのまま公開になるので、
+# 「入ってから気づく」では手遅れになる。だからここで止める。
+#
+# 有効にする  : git config core.hooksPath .githooks
+# 意図的に通す: git push --no-verify
+
+set -eu
+
+ZERO=0000000000000000000000000000000000000000
+FOUND=0
+
+# 除外: 明らかに本物ではないもの（noreply / example.com / 依存パッケージ名）
+IGNORE='noreply|example\.(com|org|net)|@types/|@react-three|@react-spring|@gltf-transform|@babel|@media|@keyframes|@supports|@import|@font-face'
+
+check() {
+  label="$1"
+  pattern="$2"
+  hits=$(printf '%s\n' "$ADDED" | grep -nE "$pattern" 2>/dev/null | grep -vE "$IGNORE" | head -5 || true)
+  if [ -n "$hits" ]; then
+    FOUND=1
+    printf '\n  ✗ %s\n' "$label"
+    printf '%s\n' "$hits" | sed 's/^/      /'
+  fi
+}
+
+while read -r _local_ref local_sha _remote_ref remote_sha; do
+  [ "$local_sha" = "$ZERO" ] && continue  # ブランチ削除は対象外
+
+  if [ "$remote_sha" = "$ZERO" ]; then
+    range="$local_sha --not --remotes=origin"   # 新しいブランチ／初回 push
+  else
+    range="$remote_sha..$local_sha"
+  fi
+
+  # これから push されるコミットで「追加された行」だけを見る
+  ADDED=$(git log -p --unified=0 --no-color --format= $range 2>/dev/null \
+    | grep -E '^\+' | grep -vE '^\+\+\+' || true)
+  [ -z "$ADDED" ] && continue
+
+  check 'メールアドレスらしき文字列'   '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
+  check '電話番号らしき文字列'         '0[0-9]{1,4}-[0-9]{1,4}-[0-9]{3,4}'
+  check '郵便番号'                     '〒 *[0-9]{3}-[0-9]{4}'
+  check '秘密鍵'                       '-----BEGIN [A-Z ]*PRIVATE KEY-----'
+  check 'AWS アクセスキー'             'AKIA[0-9A-Z]{16}'
+  check 'GitHub トークン'              'gh[pousr]_[A-Za-z0-9]{30,}'
+  check 'API キーらしき代入'           '(api[_-]?key|secret|password|access[_-]?token)["'"'"']? *[:=] *["'"'"'][A-Za-z0-9_-]{16,}'
+
+  # Cloudflare Pages は 1ファイル 25MB まで。超えるとデプロイが丸ごと失敗する
+  for file in $(git log --name-only --format= $range 2>/dev/null | sort -u); do
+    [ -f "$file" ] || continue
+    size=$(wc -c < "$file")
+    if [ "$size" -gt 20971520 ]; then
+      FOUND=1
+      printf '\n  ✗ 20MB を超えるファイル（Cloudflare Pages の上限は 25MB）\n      %s (%s MB)\n' \
+        "$file" "$((size / 1048576))"
+    fi
+  done
+done
+
+if [ "$FOUND" -ne 0 ]; then
+  cat <<'MSG'
+
+  ────────────────────────────────────────────────────────────
+  push を中止しました。上の内容が公開されて問題ないか確認してください。
+  git の履歴は消せません。あとから削除しても履歴からは取り出せます。
+
+  問題ないと判断した場合のみ: git push --no-verify
+  ────────────────────────────────────────────────────────────
+MSG
+  exit 1
+fi
+
+exit 0
